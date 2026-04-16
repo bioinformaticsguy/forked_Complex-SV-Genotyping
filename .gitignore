@@ -1,2 +1,13 @@
 /build
 ggtyper
+
+/profiles
+
+*.txt
+
+*.vcf.gz
+
+*.json
+
+
+/results
