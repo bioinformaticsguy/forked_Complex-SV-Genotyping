@@ -135,19 +135,14 @@ def make_bam(sample, seed_offset=0):
 
 def svdb_info(variant_id, chrom, pos, end, svtype, svlen, caller,
               imprecise=False, mateid=None):
-    """Build a realistic svdb-merged INFO field."""
-    flags = []
+    """Build a minimal svdb-merged INFO field with only declared header tags."""
+    parts = [f"END={end}", f"SVTYPE={svtype}", f"SVLEN={svlen}"]
     if imprecise:
-        flags.append("IMPRECISE")
-
-    base = (f"END={end};SVTYPE={svtype};SVLEN={svlen}"
-            + (";IMPRECISE" if imprecise else "")
-            + (f";MATEID={mateid}" if mateid else "")
-            + f";set={caller};FOUNDBY=1"
-            + f";{caller}_CHROM={variant_id}|{chrom}"
-            + f";{caller}_POS={variant_id}|{pos}"
-            + f";svdb_origin={caller};SUPP_VEC=010")
-    return base
+        parts.append("IMPRECISE")
+    if mateid:
+        parts.append(f"MATEID={mateid}")
+    parts += [f"set={caller}", "FOUNDBY=1", f"svdb_origin={caller}", "SUPP_VEC=010"]
+    return ";".join(parts)
 
 
 def make_vcf(sample, seed_offset=0):
@@ -162,7 +157,7 @@ def make_vcf(sample, seed_offset=0):
         ("MantaINV:1:0:0:0:0:0",       CHROM,  70000, "T", "<INV>",       150,  80000, "INV",       10000,  "manta", False, "0/1"),
         # ── Manta BND pair ───────────────────────────────────────────────────
         ("MantaBND:1:0:0:0:0:0:0",     CHROM,  90000, "N", f"N[{CHROM}:120000[", 120, 90000, "BND", 0, "manta", False, "0/1"),
-        ("MantaBND:1:0:0:0:0:0:1",     CHROM, 120000, "N", f"]{ CHROM}:90000]N", 120,120000, "BND", 0, "manta", False, "0/1"),
+        ("MantaBND:1:0:0:0:0:0:1",     CHROM, 120000, "N", f"]{CHROM}:90000]N",  120,120000, "BND", 0, "manta", False, "0/1"),
         # ── Manta IMPRECISE (should be filtered out by converter) ────────────
         ("MantaDEL:2:0:0:0:0:0",       CHROM, 140000, "G", "<DEL>",        80, 160000, "DEL",      -20000, "manta", True,  "0/1"),
         # ── CNVnator (should be filtered by --caller manta) ──────────────────
