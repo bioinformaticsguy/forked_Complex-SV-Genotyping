@@ -16,3 +16,5 @@ ggtyper
 test_samples.tsv
 logs/
 .snakemake/
+
+/genotyping_output
