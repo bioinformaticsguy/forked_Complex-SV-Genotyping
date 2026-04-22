@@ -1,0 +1,25 @@
+import pandas as pd
+import os
+
+configfile: "../config.yaml"
+
+samples_df = pd.read_csv(config["samples_sheet"], sep="\t")
+SAMPLES    = samples_df["sample_id"].tolist()
+BAM_FOR    = dict(zip(samples_df["sample_id"], samples_df["bam_path"]))
+VCF_FOR    = dict(zip(samples_df["sample_id"], samples_df["vcf_path"]))
+
+OUTDIR  = config["output_dir"]
+GGTYPER = config.get("ggtyper", "../ggtyper")
+THREADS = config.get("threads", 4)
+CALLER  = config.get("caller", "manta")
+
+SCRIPTS = os.path.join(workflow.basedir, "scripts")
+
+include: "rules/merge_vcfs.smk"
+include: "rules/prepare_variants.smk"
+include: "rules/genotyping.smk"
+
+
+rule all:
+    input:
+        f"{OUTDIR}/genotype_results.tsv"

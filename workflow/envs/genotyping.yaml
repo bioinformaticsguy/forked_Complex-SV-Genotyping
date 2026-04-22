@@ -1,0 +1,10 @@
+name: genotyping
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python>=3.8
+  - pandas
+  - bcftools>=1.10
+  - htslib>=1.10
+  - svdb
