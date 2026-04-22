@@ -22,4 +22,4 @@ include: "rules/genotyping.smk"
 
 rule all:
     input:
-        f"{OUTDIR}/out_genotype_results.tsv"
+        f"{OUTDIR}/out_genotype_results.tsv.gz"

@@ -48,7 +48,7 @@ rule genotype:
         variant_profiles=f"{OUTDIR}/profiles/variantProfiles.txt",
         sample_profiles=f"{OUTDIR}/profiles/sampleProfiles.txt"
     output:
-        results=f"{OUTDIR}/out_genotype_results.tsv"
+        results=f"{OUTDIR}/out_genotype_results.tsv.gz"
     params:
         prefix=f"{OUTDIR}/out",
         threads=THREADS
@@ -59,4 +59,5 @@ rule genotype:
           {input.sample_profiles} \
           {params.prefix} \
           -T {params.threads} -e
+        gzip {params.prefix}_genotype_results.tsv
         """
