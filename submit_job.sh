@@ -29,9 +29,9 @@ CONFIGFILE="${1:-config.yaml}"
 SAMPLESFILE="${2:-samples.tsv}"
 
 # --- Conda setup ---
-MINIFORGE_PATH="/root/miniforge3"
+MINIFORGE_PATH="/work/hassan/hassan/miniforge"
 source "${MINIFORGE_PATH}/etc/profile.d/conda.sh"
-conda activate genotyping
+conda activate snakemake
 
 # --- Setup ---
 mkdir -p logs
@@ -68,7 +68,7 @@ snakemake \
     --configfile "$CONFIGFILE" \
     --config samples_sheet="$SAMPLESFILE" \
     --use-conda \
-    --conda-prefix /root/miniforge3/envs \
+    --conda-prefix /work/hassan/hassan/snakemake-conda \
     --cores "${SLURM_CPUS_PER_TASK}" \
     --latency-wait 60 \
     --rerun-incomplete \
