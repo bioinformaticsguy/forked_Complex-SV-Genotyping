@@ -1,4 +1,4 @@
-samples_sheet: "samples.tsv"
+samples_sheet: "sample_sheets/samples.tsv"
 output_dir: "genotyping_output"
 ggtyper: "./ggtyper"
 caller: "manta"

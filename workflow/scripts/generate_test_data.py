@@ -220,8 +220,8 @@ def make_vcf(sample, seed_offset=0):
 # ── Sample sheet ─────────────────────────────────────────────────────────────
 
 def make_sample_sheet(bams, vcfs):
-    tsv_path = "test_samples.tsv"
-    abs_out   = os.path.abspath(OUTDIR)
+    os.makedirs("sample_sheets", exist_ok=True)
+    tsv_path = "sample_sheets/test_samples.tsv"
 
     with open(tsv_path, "w") as f:
         f.write("sample_id\tbam_path\tvcf_path\n")
@@ -255,7 +255,7 @@ def main():
     print(f"Test data written to: {os.path.abspath(OUTDIR)}/")
     print(f"Run the pipeline with:")
     print(f"  snakemake --snakefile workflow/Snakefile --configfile config.yaml \\")
-    print(f"    --config samples_sheet=test_samples.tsv output_dir=test_output -n")
+    print(f"    --config samples_sheet=sample_sheets/test_samples.tsv output_dir=test_output -n")
 
 
 if __name__ == "__main__":

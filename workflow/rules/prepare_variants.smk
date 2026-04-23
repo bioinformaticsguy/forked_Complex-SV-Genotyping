@@ -6,7 +6,7 @@ rule convert_to_json:
     input:
         vcf=f"{OUTDIR}/merged/population_sv.vcf"
     output:
-        json=f"{OUTDIR}/merged/variants_raw.json"
+        json=temp(f"{OUTDIR}/merged/variants_raw.json")
     params:
         script=f"{SCRIPTS}/vcf_to_ggtyper.py"
     conda:
@@ -32,7 +32,7 @@ rule filter_json:
 rule create_bam_list:
     """Write one BAM path per line for ggtyper profile-samples."""
     output:
-        txt=f"{OUTDIR}/bam_list.txt"
+        txt=temp(f"{OUTDIR}/bam_list.txt")
     run:
         with open(output.txt, "w") as f:
             for s in SAMPLES:

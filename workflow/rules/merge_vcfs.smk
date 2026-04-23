@@ -6,8 +6,8 @@ rule extract_caller_vcf:
     input:
         vcf=lambda wc: VCF_FOR[wc.sample]
     output:
-        vcf=f"{OUTDIR}/per_sample/{{sample}}_caller.vcf.gz",
-        tbi=f"{OUTDIR}/per_sample/{{sample}}_caller.vcf.gz.tbi"
+        vcf=temp(f"{OUTDIR}/per_sample/{{sample}}_caller.vcf.gz"),
+        tbi=temp(f"{OUTDIR}/per_sample/{{sample}}_caller.vcf.gz.tbi")
     params:
         caller=CALLER
     conda:
@@ -25,7 +25,7 @@ rule merge_population_vcf:
     input:
         vcfs=expand(f"{OUTDIR}/per_sample/{{sample}}_caller.vcf.gz", sample=SAMPLES)
     output:
-        vcf=f"{OUTDIR}/merged/population_sv.vcf"
+        vcf=temp(f"{OUTDIR}/merged/population_sv.vcf")
     params:
         vcf_list=lambda wc, input: " ".join(input.vcfs)
     conda:

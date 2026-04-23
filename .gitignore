@@ -13,7 +13,8 @@ ggtyper
 /results
 /test_data
 /test_output
-test_samples.tsv
+sample_sheets/test_*.tsv
+sample_sheets/*.tsv
 logs/
 .snakemake/
 

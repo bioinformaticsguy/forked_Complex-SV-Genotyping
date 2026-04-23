@@ -6,7 +6,7 @@ rule profile_samples:
     input:
         bam_list=f"{OUTDIR}/bam_list.txt"
     output:
-        profiles_list=f"{OUTDIR}/profiles/sampleProfiles.txt"
+        profiles_list=temp(f"{OUTDIR}/profiles/sampleProfiles.txt")
     params:
         outdir=f"{OUTDIR}/profiles",
         threads=THREADS
@@ -27,7 +27,7 @@ rule profile_variants:
         variants=f"{OUTDIR}/merged/variants.json",
         sample_profiles=f"{OUTDIR}/profiles/sampleProfiles.txt"
     output:
-        profiles_list=f"{OUTDIR}/profiles/variantProfiles.txt"
+        profiles_list=temp(f"{OUTDIR}/profiles/variantProfiles.txt")
     params:
         outdir=f"{OUTDIR}/profiles",
         threads=THREADS

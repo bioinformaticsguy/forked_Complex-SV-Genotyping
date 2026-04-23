@@ -1,2 +1,0 @@
-sample_id	bam_path	vcf_path
-A4842_DNA_01	/data/humangen_sfb1665_seqdata/short_read/processed_data/analysis_complete/A4842_DNA_01/alignment/A4842_DNA_01_sorted_md.bam	/data/humangen_sfb1665_seqdata/short_read/processed_data/analysis_complete/A4842_DNA_01/call_sv/genome/case_A4842_DNA_01_sv.vcf.gz

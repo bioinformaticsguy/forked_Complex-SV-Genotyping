@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import shutil
 
 configfile: "../config.yaml"
 
@@ -8,7 +9,13 @@ SAMPLES    = samples_df["sample_id"].tolist()
 BAM_FOR    = dict(zip(samples_df["sample_id"], samples_df["bam_path"]))
 VCF_FOR    = dict(zip(samples_df["sample_id"], samples_df["vcf_path"]))
 
-OUTDIR  = config["output_dir"]
+# Derive experiment name from samples sheet filename (e.g. test_samples.tsv → test)
+_sheet_stem = os.path.splitext(os.path.basename(config["samples_sheet"]))[0]
+if _sheet_stem.endswith("_samples"):
+    _sheet_stem = _sheet_stem[: -len("_samples")]
+EXPERIMENT = config.get("experiment_name", _sheet_stem)
+
+OUTDIR  = os.path.join(config["output_dir"], EXPERIMENT)
 GGTYPER = config.get("ggtyper", "../ggtyper")
 THREADS = config.get("threads", 4)
 CALLER  = config.get("caller", "manta")
@@ -23,3 +30,9 @@ include: "rules/genotyping.smk"
 rule all:
     input:
         f"{OUTDIR}/out_genotype_results.tsv.gz"
+
+
+onsuccess:
+    # Remove the profiles directory: ggtyper writes binary profile files there
+    # that are not declared as rule outputs so temp() cannot clean them up.
+    shutil.rmtree(f"{OUTDIR}/profiles", ignore_errors=True)
