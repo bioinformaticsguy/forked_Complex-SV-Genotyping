@@ -17,7 +17,7 @@ rule profile_samples:
           {input.bam_list} \
           {output.profiles_list} \
           {params.outdir}/ \
-          -T {params.threads}
+          -T {params.threads} -f
         """
 
 
