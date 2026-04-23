@@ -1,6 +1,6 @@
 import pandas as pd
 
-configfile: "config.yaml"
+configfile: "configs/config.yaml"
 
 samples_df = pd.read_csv(config["samples_sheet"], sep="\t")
 SAMPLES    = samples_df["sample_id"].tolist()

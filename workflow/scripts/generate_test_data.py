@@ -255,7 +255,7 @@ def main():
     print(f"Test data written to: {os.path.abspath(OUTDIR)}/")
     print(f"Run the pipeline with:")
     print(f"  snakemake --snakefile workflow/Snakefile --configfile config.yaml \\")
-    print(f"    --config samples_sheet=sample_sheets/test_samples.tsv output_dir=test_output -n")
+    print(f"    --config samples_sheet=sample_sheets/test_samples.tsv output_dir=output -n")
 
 
 if __name__ == "__main__":

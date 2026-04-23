@@ -18,4 +18,4 @@ sample_sheets/*.tsv
 logs/
 .snakemake/
 
-/genotyping_output
+/output

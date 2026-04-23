@@ -29,7 +29,7 @@
 #   sbatch --mem=128GB --time=5-00:00:00 submit_job.sh
 # ============================================================
 
-CONFIGFILE="${1:-config.yaml}"
+CONFIGFILE="${1:-configs/config.yaml}"
 SAMPLESFILE="${2:-sample_sheets/samples.tsv}"
 EXPERIMENT="${3:-}"   # optional; overrides the name derived from the sheet filename
 
