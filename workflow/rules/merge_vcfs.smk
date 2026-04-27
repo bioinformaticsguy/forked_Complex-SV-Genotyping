@@ -14,8 +14,12 @@ rule extract_caller_vcf:
         "../envs/genotyping.yaml"
     shell:
         """
-        bcftools view -i 'INFO/svdb_origin="{params.caller}"' \
-          {input.vcf} -O z -o {output.vcf}
+        if bcftools view -h {input.vcf} | grep -q '##INFO=<ID=svdb_origin'; then
+            bcftools view -i 'INFO/svdb_origin="{params.caller}"' \
+              {input.vcf} -O z -o {output.vcf}
+        else
+            bcftools view {input.vcf} -O z -o {output.vcf}
+        fi
         bcftools index -t {output.vcf}
         """
 
