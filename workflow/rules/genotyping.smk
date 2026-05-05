@@ -61,3 +61,28 @@ rule genotype:
           -T {params.threads} -e
         gzip {params.prefix}_genotype_results.tsv
         """
+
+
+rule annotate_vcf_with_ggtyper:
+    """Add GGTyper genotype metrics to the merged VCF as GGT_* INFO/FORMAT fields."""
+    input:
+        vcf=f"{OUTDIR}/merged/population_sv.vcf",
+        results=f"{OUTDIR}/out_genotype_results.tsv.gz"
+    output:
+        vcf=f"{OUTDIR}/out_ggtyper_annotated.vcf.gz",
+        tbi=f"{OUTDIR}/out_ggtyper_annotated.vcf.gz.tbi"
+    params:
+        script=f"{SCRIPTS}/annotate_vcf_with_ggtyper.py",
+        tmp_vcf=f"{OUTDIR}/out_ggtyper_annotated.tmp.vcf"
+    conda:
+        "../envs/genotyping.yaml"
+    shell:
+        """
+        python3 {params.script} \
+          {input.vcf} \
+          {input.results} \
+          {params.tmp_vcf}
+        bcftools view {params.tmp_vcf} -O z -o {output.vcf}
+        bcftools index -t {output.vcf}
+        rm {params.tmp_vcf}
+        """

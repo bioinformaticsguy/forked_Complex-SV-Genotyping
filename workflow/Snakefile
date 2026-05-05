@@ -29,7 +29,9 @@ include: "rules/genotyping.smk"
 
 rule all:
     input:
-        f"{OUTDIR}/out_genotype_results.tsv.gz"
+        f"{OUTDIR}/out_genotype_results.tsv.gz",
+        f"{OUTDIR}/out_ggtyper_annotated.vcf.gz",
+        f"{OUTDIR}/out_ggtyper_annotated.vcf.gz.tbi"
 
 
 onsuccess:
