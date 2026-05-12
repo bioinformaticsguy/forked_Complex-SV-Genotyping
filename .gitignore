@@ -23,3 +23,7 @@ logs/
 /insp
 
 /insp/
+
+
+__pycache__/
+  *.py[cod]
