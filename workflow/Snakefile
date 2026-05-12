@@ -19,6 +19,7 @@ OUTDIR  = os.path.join(config["output_dir"], EXPERIMENT)
 GGTYPER = config.get("ggtyper", "../ggtyper")
 THREADS = config.get("threads", 4)
 CALLER  = config.get("caller", "manta")
+GGTYPER_FILTER = config.get("ggtyper_filter", {})
 
 SCRIPTS = os.path.join(workflow.basedir, "scripts")
 
@@ -30,8 +31,15 @@ include: "rules/genotyping.smk"
 rule all:
     input:
         f"{OUTDIR}/out_genotype_results.tsv.gz",
+        f"{OUTDIR}/out_genotype_results.certainty_all.svg",
+        f"{OUTDIR}/out_genotype_results.certainty_variant.svg",
+        f"{OUTDIR}/out_genotype_results.certainty_variant-quality-pass.svg",
+        f"{OUTDIR}/out_genotype_results.certainty_summary.tsv",
+        f"{OUTDIR}/out_genotype_results.certainty_summary.thresholds.tsv",
         f"{OUTDIR}/out_ggtyper_annotated.vcf.gz",
-        f"{OUTDIR}/out_ggtyper_annotated.vcf.gz.tbi"
+        f"{OUTDIR}/out_ggtyper_annotated.vcf.gz.tbi",
+        f"{OUTDIR}/out_ggtyper_filtered.vcf.gz",
+        f"{OUTDIR}/out_ggtyper_filtered.vcf.gz.tbi"
 
 
 onsuccess:

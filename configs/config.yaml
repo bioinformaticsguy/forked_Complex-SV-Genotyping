@@ -3,3 +3,13 @@ output_dir: "output"
 ggtyper: "./ggtyper"
 caller: "manta"
 threads: 4
+
+ggtyper_filter:
+  # Initial conservative post-genotyping thresholds.
+  # Tune these after calibration against the HG002 truth set.
+  require_quality_pass: true
+  min_certainty: 0.8
+  min_genotype_quality: 20
+  min_total_reads: 10
+  min_avg_mapq: 20
+  min_passing_samples: 1
