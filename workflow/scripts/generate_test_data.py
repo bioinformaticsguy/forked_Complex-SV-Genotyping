@@ -15,15 +15,17 @@ Creates two test samples in the same directory structure as real data:
   │   └── call_sv/genome/
   │       ├── case_TEST001_DNA_01_sv.vcf.gz
   │       └── case_TEST001_DNA_01_sv.vcf.gz.tbi
-  └── TEST002_DNA_01/
+  ├── TEST002_DNA_01/
       └── ...
+  └── TEST003_DNA_01/
+      └── ...  (151 bp reads)
 
 Requirements:
     samtools, bcftools  (available in the genotyping conda env)
 
 Usage:
     python3 workflow/scripts/generate_test_data.py
-    # → writes test_data/ and test_samples.tsv in the current directory
+    # → writes test_data/ and read-length-specific sample sheets
 """
 
 import os
@@ -34,11 +36,20 @@ import textwrap
 # ── Parameters ──────────────────────────────────────────────────────────────
 
 OUTDIR   = "test_data"
-SAMPLES  = ["TEST001_DNA_01", "TEST002_DNA_01"]
+SAMPLE_READ_LENGTHS = {
+    "TEST001_DNA_01": 150,
+    "TEST002_DNA_01": 150,
+    "TEST003_DNA_01": 151,
+}
+SAMPLES  = list(SAMPLE_READ_LENGTHS)
+SAMPLE_SHEETS = {
+    "sample_sheets/test_samples.tsv": ["TEST001_DNA_01", "TEST002_DNA_01"],
+    "sample_sheets/test_151bp_samples.tsv": ["TEST003_DNA_01"],
+    "sample_sheets/test_mixed_samples.tsv": SAMPLES,
+}
 CHROM    = "chr1"
 CHROM2   = "chr22"
 CHROM_LEN = 200_000
-READ_LEN  = 150
 INSERT_MEAN = 400
 INSERT_SD   = 50
 N_PAIRS     = 3_000      # read pairs per sample — enough for insert-size profile
@@ -84,27 +95,27 @@ def make_reference():
 
 # ── BAM ─────────────────────────────────────────────────────────────────────
 
-def make_bam(sample, seed_offset=0):
+def make_bam(sample, read_len, seed_offset=0):
     random.seed(SEED + seed_offset)
 
     sam_path = f"{OUTDIR}/{sample}/alignment/temp.sam"
     bam_base = f"{OUTDIR}/{sample}/alignment/{sample}_sorted_md"
 
-    reads = []   # list of (pos1, sam_line_R1, sam_line_R2)
+    reads = []   # list of (pos1, pos2, sam_line_R1, sam_line_R2)
 
     for i in range(N_PAIRS):
         insert = max(250, int(random.gauss(INSERT_MEAN, INSERT_SD)))
-        pos1   = random.randint(1, CHROM_LEN - insert - READ_LEN)
-        pos2   = pos1 + insert - READ_LEN
+        pos1   = random.randint(1, CHROM_LEN - insert - read_len)
+        pos2   = pos1 + insert - read_len
 
         name = f"read_{i:06d}"
-        seq  = "".join(random.choices("ACGT", k=READ_LEN))
-        qual = "I" * READ_LEN
+        seq  = "".join(random.choices("ACGT", k=read_len))
+        qual = "I" * read_len
 
-        r1 = (f"{name}\t99\t{CHROM}\t{pos1}\t60\t{READ_LEN}M"
+        r1 = (f"{name}\t99\t{CHROM}\t{pos1}\t60\t{read_len}M"
               f"\t=\t{pos2}\t{insert}\t{seq}\t{qual}"
               f"\tRG:Z:RG1\n")
-        r2 = (f"{name}\t147\t{CHROM}\t{pos2}\t60\t{READ_LEN}M"
+        r2 = (f"{name}\t147\t{CHROM}\t{pos2}\t60\t{read_len}M"
               f"\t=\t{pos1}\t{-insert}\t{seq}\t{qual}"
               f"\tRG:Z:RG1\n")
 
@@ -120,7 +131,7 @@ def make_bam(sample, seed_offset=0):
         f.write(f"@RG\tID:RG1\tSM:{sample}\tPL:ILLUMINA\tLB:lib1\n")
         for _, _, r1, r2 in reads:
             f.write(r1)
-        # Write R2s sorted by their position too
+            f.write(r2)
 
     # Re-sort properly with samtools (handles R2 ordering)
     run(f"samtools sort -o {bam_base}.bam {sam_path}")
@@ -219,13 +230,12 @@ def make_vcf(sample, seed_offset=0):
 
 # ── Sample sheet ─────────────────────────────────────────────────────────────
 
-def make_sample_sheet(bams, vcfs):
+def make_sample_sheet(tsv_path, samples):
     os.makedirs("sample_sheets", exist_ok=True)
-    tsv_path = "sample_sheets/test_samples.tsv"
 
     with open(tsv_path, "w") as f:
         f.write("sample_id\tbam_path\tvcf_path\n")
-        for sample in SAMPLES:
+        for sample in samples:
             bam = os.path.abspath(f"{OUTDIR}/{sample}/alignment/{sample}_sorted_md.bam")
             vcf = os.path.abspath(f"{OUTDIR}/{sample}/call_sv/genome/case_{sample}_sv.vcf.gz")
             f.write(f"{sample}\t{bam}\t{vcf}\n")
@@ -238,23 +248,23 @@ def make_sample_sheet(bams, vcfs):
 def main():
     print("=== Generating test data ===")
 
-    print("\n[1/4] Reference genome")
+    print(f"\n[1/{len(SAMPLES)+2}] Reference genome")
     make_reference()
 
-    bams, vcfs = [], []
     for i, sample in enumerate(SAMPLES):
         print(f"\n[{i+2}/{len(SAMPLES)+2}] Sample: {sample}")
         make_dirs(sample)
-        bams.append(make_bam(sample, seed_offset=i * 1000))
-        vcfs.append(make_vcf(sample, seed_offset=i * 1000))
+        make_bam(sample, SAMPLE_READ_LENGTHS[sample], seed_offset=i * 1000)
+        make_vcf(sample, seed_offset=i * 1000)
 
-    print(f"\n[{len(SAMPLES)+2}/{len(SAMPLES)+2}] Sample sheet")
-    make_sample_sheet(bams, vcfs)
+    print(f"\n[{len(SAMPLES)+2}/{len(SAMPLES)+2}] Sample sheets")
+    for tsv_path, samples in SAMPLE_SHEETS.items():
+        make_sample_sheet(tsv_path, samples)
 
     print("\n=== Done ===")
     print(f"Test data written to: {os.path.abspath(OUTDIR)}/")
     print(f"Run the pipeline with:")
-    print(f"  snakemake --snakefile workflow/Snakefile --configfile config.yaml \\")
+    print(f"  snakemake --snakefile workflow/Snakefile --configfile configs/config.yaml \\")
     print(f"    --config samples_sheet=sample_sheets/test_samples.tsv output_dir=output -n")
 
 

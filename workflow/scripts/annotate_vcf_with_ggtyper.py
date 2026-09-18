@@ -8,6 +8,8 @@ import gzip
 import sys
 from collections import defaultdict
 
+from variant_id import safe_variant_id
+
 
 FORMAT_HEADERS = [
     '##FORMAT=<ID=GGT_GT,Number=1,Type=String,Description="GGTyper genotype call">',
@@ -188,7 +190,14 @@ def annotate_vcf(vcf_path, results_path, output_path):
                 continue
 
             record_id = fields[2]
-            sample_rows = by_record_id.get(record_id, {})
+            # svdb uses the complete, pipe-separated source ID as the merged
+            # record ID. Prefer that exact GGTyper variant match, while still
+            # supporting VCFs whose records retain an individual source ID.
+            sample_rows = (
+                by_variant.get(record_id)
+                or by_variant.get(safe_variant_id(record_id))
+                or by_record_id.get(record_id, {})
+            )
 
             if sample_rows:
                 matched_records += 1

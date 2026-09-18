@@ -11,7 +11,8 @@ DATE := on $(shell git log --pretty=format:"%cd" --date=iso | cut -f 1,2 -d " " 
 VERSION := 0.0.1-$(shell git log --pretty=format:"%h" --date=iso | head -n 1)
 
 override CXXFLAGS += -DDATE=\""$(DATE)"\" -DVERSION=\""$(VERSION)"\"
-override CXXFLAGS += -I $(JSON_PATH) -DSEQAN_HAS_ZLIB -lz -lhts -DSEQAN_DISABLE_VERSION_CHECK -DEIGEN_DONT_PARALLELIZE -DEIGEN_DEFAULT_DENSE_INDEX_TYPE=int64_t -std=c++17 -Wall -O2 -fopenmp -lpthread -g 
+override CXXFLAGS += -I $(JSON_PATH) -DSEQAN_HAS_ZLIB -DSEQAN_DISABLE_VERSION_CHECK -DEIGEN_DONT_PARALLELIZE -DEIGEN_DEFAULT_DENSE_INDEX_TYPE=int64_t -std=c++17 -Wall -O2 -fopenmp -g
+override LDLIBS += -lhts -lz -lpthread
 
 ifdef INCLUDE_PATH
 	override CXXFLAGS+=-I $(INCLUDE_PATH)
@@ -30,7 +31,7 @@ OBJECTS := $(addprefix $(ODIR)/, $(SOURCES:$(SRCDIR)/%.cpp=%.o))
 all: $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	@$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@
+	@$(CXX) $(CXXFLAGS) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $@
 
 $(ODIR)/%.o: $(SRCDIR)/%.cpp
 	@mkdir -p $(@D)

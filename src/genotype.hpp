@@ -12,6 +12,7 @@
 #include "sample.hpp"
 #include "variantProfile.hpp"
 #include "profileHandler.hpp"
+#include "readLengthPolicy.hpp"
 
 
 struct genotypeParameters

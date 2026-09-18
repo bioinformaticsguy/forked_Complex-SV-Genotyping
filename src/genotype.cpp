@@ -305,7 +305,7 @@ inline void checkProfileParameters(int & sMin, int & sMax, int & readLength, std
             it = variantProfiles.erase(it);
             continue;
         }
-        if (it->getReadLength() != readLength)
+        if (!ReadLengthPolicy::compatible(it->getReadLength(), readLength))
         {
             std::string msg = "Read length of profile " + 
                 it->getName() + 
@@ -323,6 +323,7 @@ inline void checkProfileParameters(int & sMin, int & sMax, int & readLength, std
 inline void checkSampleParameters(std::vector<std::string> & sampleProfiles, int & sMin, int & sMax, int & readLength, genotypeParameters & params)
 {
     std::string filename;
+    int minReadLength {-1}, maxReadLength {-1};
     std::ifstream stream(params.sampleList);
     if (!stream.is_open())
         throw std::runtime_error("Could not open list of sample profiles for reading.");
@@ -344,17 +345,21 @@ inline void checkSampleParameters(std::vector<std::string> & sampleProfiles, int
             s.readSampleProfile(filename);
         }
 
-        if (readLength < 0) {
-            readLength = s.getLibraryDistribution().getReadLength();
-        } else if (s.getLibraryDistribution().getReadLength() != readLength) {
-		std::string msg;
-		if (sampleProfiles.size() >= 2) {
-            		msg = "Read length in samples does not match.\nCurrent consensus: " + std::to_string(readLength) + "\n" + filename + ": " + std::to_string(s.getLibraryDistribution().getReadLength()) + "\nLast profile with consensus length: " + sampleProfiles[sampleProfiles.size() - 2] + "\nVariant profiles for divergent samples must be generated separately.";
-		} else {
-			msg = "Read length in samples does not match.\nCurrent consensus: " + std::to_string(readLength) + "\n" + filename + ": " + std::to_string(s.getLibraryDistribution().getReadLength()) + "\nVariant profiles for divergent samples must be generated separately.";
-		}
-		throw std::runtime_error(msg.c_str());
+        int sampleReadLength = s.getLibraryDistribution().getReadLength();
+        if (minReadLength < 0)
+            minReadLength = sampleReadLength;
+        else
+            minReadLength = std::min(minReadLength, sampleReadLength);
+        maxReadLength = std::max(maxReadLength, sampleReadLength);
+        if (!ReadLengthPolicy::compatible(minReadLength, maxReadLength)) {
+            std::string msg = "Read lengths in samples differ by more than " +
+                std::to_string(ReadLengthPolicy::tolerance) + " bp.\nMinimum: " +
+                std::to_string(minReadLength) + "\nMaximum: " +
+                std::to_string(maxReadLength) +
+                "\nVariant profiles for divergent samples must be generated separately.";
+            throw std::runtime_error(msg);
         }
+        readLength = maxReadLength;
         sMax = std::max(sMax, s.getLibraryDistribution().getMaxInsert());
         if (sMin < 0)
             sMin = s.getLibraryDistribution().getMinInsert();
@@ -363,6 +368,11 @@ inline void checkSampleParameters(std::vector<std::string> & sampleProfiles, int
         s.close();
     }
     stream.close();
+    if (minReadLength != maxReadLength) {
+        std::cerr << "Sample read lengths range from " << minReadLength << " to " << maxReadLength
+                  << " bp; using " << readLength << " bp as the shared profile length."
+                  << std::endl;
+    }
     return;
 }
 

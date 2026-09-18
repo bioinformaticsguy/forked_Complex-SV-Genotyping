@@ -9,6 +9,7 @@
 #include "variantParser.hpp"
 #include "variant.hpp"
 #include "profileHandler.hpp"
+#include "readLengthPolicy.hpp"
 
 struct variantProfileParams {
     std::vector<std::string> variantFileNames;

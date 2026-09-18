@@ -90,6 +90,8 @@ The `profile-variants` command is similar to sample-variants, but takes as first
 Details on that format may be found below. The second and third argument once again denote the target location of the profile list and the target directory of the profiles, respectively.  
 Variant profiles need to be created with library parameters (insert size range and read size) that match the samples to be genotyped, wich are determined from a list of sample profiles (fourth argument).
 
+Sample read lengths may differ by at most 1 bp. When both lengths are present (for example, 150 bp and 151 bp), GGTyper uses the larger value to create the shared variant profiles. Differences greater than 1 bp still require separate variant profiles.
+
 ### Variant Description
 (Complex) Structural Variants can be described by their novel junctions or break-ends. We use the JSON format to specify the novel junctions of the alternate alleles for each affected chromosome. It is imperative that these junctions are supplied in the order they are found in on the variant allele.
   

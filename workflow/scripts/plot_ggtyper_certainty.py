@@ -217,9 +217,6 @@ def main():
     selected = subset_rows(rows, args.mode)
     values = [row["certainty"] for row in selected]
 
-    if not values:
-        raise SystemExit(f"No rows selected for mode '{args.mode}'")
-
     svg_path = prefix.parent / f"{prefix.name}.certainty_{args.mode}.svg"
     summary_path = prefix.parent / f"{prefix.name}.certainty_summary.tsv"
     write_svg(svg_path, values, thresholds, f"GGTyper certainty distribution ({args.mode})", args.bins)

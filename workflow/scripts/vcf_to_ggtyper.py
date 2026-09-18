@@ -15,16 +15,9 @@ Usage:
 import re
 import json
 import gzip
-import hashlib
 import argparse
 
-_MAX_VID = 200  # profile filename = vid + ".profile"; Linux limit is 255 bytes
-
-def safe_vid(vid):
-    """Return vid unchanged if short enough, otherwise a stable SHA-256 prefix."""
-    if len(vid) <= _MAX_VID:
-        return vid
-    return "sv_" + hashlib.sha256(vid.encode()).hexdigest()[:20]
+from variant_id import safe_variant_id
 
 
 def parse_info(info_str):
@@ -157,7 +150,7 @@ def convert(vcf_path, output_path, caller_filter=None, skip_imprecise=True, max_
 
             # Group junctions under the affected chromosome(s)
             chrom_key = chrom
-            variants[safe_vid(vid)] = {
+            variants[safe_variant_id(vid)] = {
                 "VAR": {
                     chrom_key: junctions
                 }

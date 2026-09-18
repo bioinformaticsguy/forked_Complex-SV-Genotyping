@@ -41,7 +41,7 @@ int profileVariants(int argc, const char **argv)
 
     // get sMin, sMax and readLength from sample profiles
     int sMin {1000}, sMax {0}, readLength {-1};
-    bool readLengthError {false};
+    int minReadLength {-1}, maxReadLength {-1};
     float insertMean = 0;
     std::vector<std::unordered_map<std::string, int32_t>> contigInfos;
 
@@ -73,13 +73,12 @@ int profileVariants(int argc, const char **argv)
             insertMean += s.getLibraryDistribution().getInsertMean();
             contigInfos.push_back(s.getContigLengths());
 
-            if (readLength < 0)
-                readLength = s.getMaxReadLength();
-            else if (readLength != s.getMaxReadLength())
-            {
-                readLengthError = true;
-                std::cerr << "Read Length error in sample " << s.getSampleName() << ": " << s.getMaxReadLength() << std::endl;
-            }
+            int sampleReadLength = s.getMaxReadLength();
+            if (minReadLength < 0)
+                minReadLength = sampleReadLength;
+            else
+                minReadLength = std::min(minReadLength, sampleReadLength);
+            maxReadLength = std::max(maxReadLength, sampleReadLength);
             s.close();
         }
         if (counter > 0)
@@ -91,9 +90,18 @@ int profileVariants(int argc, const char **argv)
         throw std::runtime_error("Aborted. Calculation of variant profiles requires access to sample profiles.");
     }
 
-    if (readLengthError) {
-	    std::cerr << "Consensus read length: " << readLength << std::endl;
-	    throw std::runtime_error("Read lengths of sample profiles do not match. Cannot create common variant profiles.");
+    if (!ReadLengthPolicy::compatible(minReadLength, maxReadLength)) {
+        std::string msg = "Read lengths of sample profiles differ by more than " +
+            std::to_string(ReadLengthPolicy::tolerance) + " bp (minimum: " +
+            std::to_string(minReadLength) + ", maximum: " +
+            std::to_string(maxReadLength) + "). Cannot create common variant profiles.";
+        throw std::runtime_error(msg);
+    }
+    readLength = maxReadLength;
+    if (minReadLength != maxReadLength) {
+        std::cerr << "Sample read lengths range from " << minReadLength << " to " << maxReadLength
+                  << " bp; using " << readLength << " bp for shared variant profiles."
+                  << std::endl;
     }
 
 
