@@ -7,7 +7,7 @@ threads: 4
 ggtyper_filter:
   # Initial conservative post-genotyping thresholds.
   # Tune these after calibration against the HG002 truth set.
-  require_quality_pass: true
+  require_quality_pass: false
   min_certainty: 0.56
   min_genotype_quality: 20
   min_total_reads: 10
